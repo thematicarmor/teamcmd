@@ -26,20 +26,20 @@ import java.util.Collection;
 
 public class CommandBuilder {
     private static final SimpleCommandExceptionType DUPLICATE_NAME =
-        new SimpleCommandExceptionType(Text.translatable("commands.team.add.duplicate"));
+        new SimpleCommandExceptionType(Text.translatable("commands.teamcmd.add.duplicate"));
     private static final SimpleCommandExceptionType NAME_UNCHANGED =
-        new SimpleCommandExceptionType(Text.translatable("commands.team.option.name.unchanged"));
+        new SimpleCommandExceptionType(Text.translatable("commands.teamcmd.option.name.unchanged"));
     private static final SimpleCommandExceptionType COLOR_UNCHANGED =
-        new SimpleCommandExceptionType(Text.translatable("commands.team.option.color.unchanged"));
+        new SimpleCommandExceptionType(Text.translatable("commands.teamcmd.option.color.unchanged"));
     private static final SimpleCommandExceptionType FRIENDLY_FIRE_ALREADY_ENABLED =
-        new SimpleCommandExceptionType(Text.translatable("commands.team.option.friendlyfire.alreadyEnabled"));
+        new SimpleCommandExceptionType(Text.translatable("commands.teamcmd.option.friendlyfire.alreadyEnabled"));
     private static final SimpleCommandExceptionType FRIENDLY_FIRE_ALREADY_DISABLED =
-        new SimpleCommandExceptionType(Text.translatable("commands.team.option.friendlyfire.alreadyDisabled"));
+        new SimpleCommandExceptionType(Text.translatable("commands.teamcmd.option.friendlyfire.alreadyDisabled"));
     private static final SimpleCommandExceptionType FRIENDLY_INVISIBLES_ALREADY_ENABLED =
-        new SimpleCommandExceptionType(Text.translatable("commands.team.option.seeFriendlyInvisibles" +
+        new SimpleCommandExceptionType(Text.translatable("commands.teamcmd.option.seeFriendlyInvisibles" +
             ".alreadyEnabled"));
     private static final SimpleCommandExceptionType OPTION_SEE_FRIENDLY_INVISIBLES_ALREADY_DISABLED_EXCEPTION =
-        new SimpleCommandExceptionType(Text.translatable("commands.team.option.seeFriendlyInvisibles" +
+        new SimpleCommandExceptionType(Text.translatable("commands.teamcmd.option.seeFriendlyInvisibles" +
             ".alreadyDisabled"));
     private static final SimpleCommandExceptionType ALREADY_IN_TEAM =
         new SimpleCommandExceptionType(Text.translatable("commands.teamcmd.fail.in_team"));
@@ -98,7 +98,7 @@ public class CommandBuilder {
         newTeam.setColor(color);
         setPrefix(newTeam);
         setSuffix(newTeam);
-        source.sendFeedback(() -> Text.translatable("commands.team.add.success", newTeam.getFormattedName()), false);
+        source.sendFeedback(() -> Text.translatable("commands.teamcmd.add.success", newTeam.getFormattedName()), false);
         return 1;
 
     }
@@ -121,7 +121,7 @@ public class CommandBuilder {
         setSuffix(team);
 
 
-        source.sendFeedback(() -> Text.translatable("commands.team.option.name.success", team.getFormattedName()), false);
+        source.sendFeedback(() -> Text.translatable("commands.teamcmd.option.name.success", team.getFormattedName()), false);
         return 0;
     }
 
@@ -144,7 +144,7 @@ public class CommandBuilder {
         setSuffix(team);
 
         Formatting finalColor = color;
-        source.sendFeedback(() -> Text.translatable("commands.team.option.color.success", team.getFormattedName(),
+        source.sendFeedback(() -> Text.translatable("commands.teamcmd.option.color.success", team.getFormattedName(),
             finalColor.getName()), false);
         return 0;
     }
@@ -159,7 +159,7 @@ public class CommandBuilder {
                 FRIENDLY_FIRE_ALREADY_DISABLED.create();
         }
         team.setFriendlyFireAllowed(allowed);
-        source.sendFeedback(() -> Text.translatable("commands.team.option.friendlyfire." + (allowed ? "enabled" :
+        source.sendFeedback(() -> Text.translatable("commands.teamcmd.option.friendlyfire." + (allowed ? "enabled" :
             "disabled"), team.getFormattedName()), false);
         return 0;
     }
@@ -174,7 +174,7 @@ public class CommandBuilder {
                 OPTION_SEE_FRIENDLY_INVISIBLES_ALREADY_DISABLED_EXCEPTION.create();
         }
         team.setShowFriendlyInvisibles(allowed);
-        source.sendFeedback(() -> Text.translatable("commands.team.option.seeFriendlyInvisibles." + (allowed ?
+        source.sendFeedback(() -> Text.translatable("commands.teamcmd.option.seeFriendlyInvisibles." + (allowed ?
             "enabled" : "disabled"), team.getFormattedName()), false);
         return 0;
     }
@@ -248,10 +248,10 @@ public class CommandBuilder {
     private static int executeListMembers(ServerCommandSource source, Team team) {
         Collection<String> collection = team.getPlayerList();
         if (collection.isEmpty()) {
-            source.sendFeedback(() -> Text.translatable("commands.team.list.members.empty", team.getFormattedName()),
+            source.sendFeedback(() -> Text.translatable("commands.teamcmd.list.members.empty", team.getFormattedName()),
                 false);
         } else {
-            source.sendFeedback(() -> Text.translatable("commands.team.list.members.success", team.getFormattedName(),
+            source.sendFeedback(() -> Text.translatable("commands.teamcmd.list.members.success", team.getFormattedName(),
                 collection.size(), Texts.joinOrdered(collection)), false);
         }
         return collection.size();
@@ -260,9 +260,9 @@ public class CommandBuilder {
     private static int executeListTeams(ServerCommandSource source) {
         Collection<Team> collection = source.getServer().getScoreboard().getTeams();
         if (collection.isEmpty()) {
-            source.sendFeedback(() -> Text.translatable("commands.team.list.teams.empty"), false);
+            source.sendFeedback(() -> Text.translatable("commands.teamcmd.list.teams.empty"), false);
         } else {
-            source.sendFeedback(() -> Text.translatable("commands.team.list.teams.success", collection.size(),
+            source.sendFeedback(() -> Text.translatable("commands.teamcmd.list.teams.success", collection.size(),
                 Texts.join(collection, Team::getFormattedName)), false);
         }
         return collection.size();

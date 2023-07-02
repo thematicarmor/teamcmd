@@ -8,7 +8,7 @@ import java.io.File;
 
 
 public class Config {
-    public String commandName = "t";
+    public String commandName = "guild";
     public boolean allowDuplicateColors = true;
     public boolean allowDuplicateDisplaynames = false;
     public String prefixFormat = "[%.1s] ";
