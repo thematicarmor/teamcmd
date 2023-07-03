@@ -228,7 +228,7 @@ public class CommandBuilder {
                 .styled((style) -> style
                     .withClickEvent(new ClickEvent(ClickEvent.Action.SUGGEST_COMMAND, "/guild accept"))
                     .withHoverEvent(new HoverEvent(HoverEvent.Action.SHOW_TEXT, Text.literal("/guild accept")))
-                    .withInsertion("/t accept"));
+                    .withInsertion("/guild accept"));
 
 
         newPlayer.sendMessage(inviteText);
