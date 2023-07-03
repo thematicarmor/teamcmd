@@ -1,11 +1,14 @@
 package io.github.beabfc.teamcmd;
 
+import net.luckperms.api.LuckPermsProvider;
+import net.luckperms.api.model.user.User;
 import net.minecraft.scoreboard.Team;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.text.Text;
 
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 
@@ -59,6 +62,15 @@ public abstract class TeamUtil {
 
             invite.hasTicked();
         }
+    }
+
+    public static boolean isOwner(ServerPlayerEntity player, Team team) {
+
+        User user = LuckPermsProvider.get().getUserManager().getUser(player.getUuid());
+        List<String> metaTeam = user.getCachedData().getMetaData().getMeta().get("guild-owner");
+
+        if (metaTeam == null) return false;
+        return metaTeam.get(0).equals(team.getName());
     }
 
     private static class TeamInvite {

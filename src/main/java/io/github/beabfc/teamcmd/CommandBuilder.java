@@ -7,11 +7,11 @@ import com.mojang.brigadier.builder.LiteralArgumentBuilder;
 import com.mojang.brigadier.exceptions.CommandSyntaxException;
 import com.mojang.brigadier.exceptions.DynamicCommandExceptionType;
 import com.mojang.brigadier.exceptions.SimpleCommandExceptionType;
+import net.luckperms.api.LuckPermsProvider;
+import net.luckperms.api.model.user.User;
+import net.luckperms.api.node.NodeType;
+import net.luckperms.api.node.types.MetaNode;
 import net.minecraft.command.argument.ColorArgumentType;
-
-import static net.minecraft.server.command.CommandManager.argument;
-import static net.minecraft.server.command.CommandManager.literal;
-
 import net.minecraft.command.argument.EntityArgumentType;
 import net.minecraft.command.argument.TeamArgumentType;
 import net.minecraft.scoreboard.Scoreboard;
@@ -22,6 +22,9 @@ import net.minecraft.text.*;
 import net.minecraft.util.Formatting;
 
 import java.util.Collection;
+
+import static net.minecraft.server.command.CommandManager.argument;
+import static net.minecraft.server.command.CommandManager.literal;
 
 
 public class CommandBuilder {
@@ -53,6 +56,8 @@ public class CommandBuilder {
         new SimpleCommandExceptionType(Text.translatable("commands.teamcmd.fail.duplicate_color"));
     private static final DynamicCommandExceptionType TEAM_NOT_FOUND =
         new DynamicCommandExceptionType(option -> Text.translatable("team.notFound", option));
+    private static final SimpleCommandExceptionType NOT_GUILD_OWNER =
+            new SimpleCommandExceptionType(Text.translatable("commands.teamcmd.not_guild_owner"));
 
     public static void register(CommandDispatcher<ServerCommandSource> dispatcher) {
         LiteralArgumentBuilder<ServerCommandSource> teamCmd = literal(TeamCommand.CONFIG.commandName);
@@ -66,7 +71,8 @@ public class CommandBuilder {
                     TeamArgumentType.getTeam(ctx, "team")))))
             .then(literal("leave").executes(ctx -> executeLeave(ctx.getSource())))
             .then(literal("invite").then(argument("player", EntityArgumentType.player()).executes(ctx -> executeInvitePlayer(ctx.getSource(), EntityArgumentType.getPlayer(ctx, "player")))))
-            .then(literal("accept").executes(ctx -> executeAcceptInvite(ctx.getSource())));
+            .then(literal("accept").executes(ctx -> executeAcceptInvite(ctx.getSource())))
+            .then(literal("passOwnership").then((argument("player", EntityArgumentType.player()).executes(ctx -> executePassOwnership(ctx.getSource(), EntityArgumentType.getPlayer(ctx, "player"))))));
 
         LiteralArgumentBuilder<ServerCommandSource> setCommand = literal("set")
             .then(literal("color").then(argument("color", ColorArgumentType.color()).executes(ctx -> executeSetColor(ctx.getSource(), ColorArgumentType.getColor(ctx, "color")))))
@@ -98,6 +104,15 @@ public class CommandBuilder {
         newTeam.setColor(color);
         setPrefix(newTeam);
         setSuffix(newTeam);
+
+        User user = LuckPermsProvider.get().getUserManager().getUser(player.getUuid());
+        MetaNode metaNode = MetaNode.builder("guild-owner", name).build();
+
+        user.data().clear(NodeType.META.predicate(mn -> mn.getMetaKey().equals("guild-owner")));
+        user.data().add(metaNode);
+
+        LuckPermsProvider.get().getUserManager().saveUser(user);
+
         source.sendFeedback(() -> Text.translatable("commands.teamcmd.add.success", newTeam.getFormattedName()), false);
         return 1;
 
@@ -110,6 +125,8 @@ public class CommandBuilder {
 
         if (team == null) {
             throw NOT_IN_TEAM.create();
+        } else if (!TeamUtil.isOwner(player, team)) {
+            throw NOT_GUILD_OWNER.create();
         } else if (team.getDisplayName().getString().equals(displayName)) {
             throw NAME_UNCHANGED.create();
         } else if (duplicateName(scoreboard.getTeams(), displayName)) {
@@ -133,6 +150,8 @@ public class CommandBuilder {
         if (color == Formatting.RESET) color = Formatting.WHITE;
         if (team == null) {
             throw NOT_IN_TEAM.create();
+        } else if (!TeamUtil.isOwner(player, team)) {
+            throw NOT_GUILD_OWNER.create();
         } else if (team.getColor().equals(color)) {
             throw COLOR_UNCHANGED.create();
         } else if (duplicateColor(scoreboard.getTeams(), color)) {
@@ -154,6 +173,8 @@ public class CommandBuilder {
         Team team = (Team) player.getScoreboardTeam();
         if (team == null) {
             throw NOT_IN_TEAM.create();
+        } else if (!TeamUtil.isOwner(player, team)) {
+            throw NOT_GUILD_OWNER.create();
         } else if (team.isFriendlyFireAllowed() == allowed) {
             throw allowed ? FRIENDLY_FIRE_ALREADY_ENABLED.create() :
                 FRIENDLY_FIRE_ALREADY_DISABLED.create();
@@ -169,6 +190,8 @@ public class CommandBuilder {
         Team team = (Team) player.getScoreboardTeam();
         if (team == null) {
             throw NOT_IN_TEAM.create();
+        } else if (!TeamUtil.isOwner(player, team)) {
+            throw NOT_GUILD_OWNER.create();
         } else if (team.shouldShowFriendlyInvisibles() == allowed) {
             throw allowed ? FRIENDLY_INVISIBLES_ALREADY_ENABLED.create() :
                 OPTION_SEE_FRIENDLY_INVISIBLES_ALREADY_DISABLED_EXCEPTION.create();
@@ -237,10 +260,26 @@ public class CommandBuilder {
             throw NOT_IN_TEAM.create();
         }
 
+        if (team.getPlayerList().size() > 1 && TeamUtil.isOwner(player, team)) {
+            source.sendFeedback(() -> Text.translatable("commands.teamcmd.fail.owner_cant_leave"), false);
+            return 0;
+        }
+
         TeamUtil.sendToTeammates(player, Text.translatable("commands.teamcmd.teammates.left",
             player.getDisplayName()));
+
+        // remove them as the owner of the guild (owners are allowed to leave if they are the only member of the guild)
+        if (TeamUtil.isOwner(player, team)) {
+            User user = LuckPermsProvider.get().getUserManager().getUser(player.getUuid());
+            user.data().clear(NodeType.META.predicate(mn -> mn.getMetaKey().equals("guild-owner")));
+            LuckPermsProvider.get().getUserManager().saveUser(user);
+        }
+
         player.getScoreboard().clearPlayerTeam(player.getEntityName());
-        if (team.getPlayerList().size() == 0) player.getScoreboard().removeTeam(team);
+        if (team.getPlayerList().size() == 0) {
+            player.getScoreboard().removeTeam(team);
+        }
+
         source.sendFeedback(() -> Text.translatable("commands.teamcmd.left", team.getFormattedName()), false);
         return 1;
     }
@@ -266,6 +305,43 @@ public class CommandBuilder {
                 Texts.join(collection, Team::getFormattedName)), false);
         }
         return collection.size();
+    }
+
+    private static int executePassOwnership(ServerCommandSource source, ServerPlayerEntity newOwner) throws CommandSyntaxException {
+
+        ServerPlayerEntity player = source.getPlayerOrThrow();
+        Team team = (Team) player.getScoreboardTeam();
+
+        if (team == null) {
+            throw NOT_IN_TEAM.create();
+        } else if (!TeamUtil.isOwner(player, team)) {
+            throw NOT_GUILD_OWNER.create();
+        }
+
+        if (player == newOwner) {
+            source.sendFeedback(() -> Text.translatable("commands.teamcmd.pass_ownership.yourself"), false);
+            return 0;
+        }
+
+        if (newOwner.getScoreboardTeam() == null || !player.getScoreboardTeam().getName().equals(newOwner.getScoreboardTeam().getName())) {
+            source.sendFeedback(() -> Text.translatable("commands.teamcmd.pass_ownership.not_in_team"), false);
+            return 0;
+        }
+
+        // remove owner from old owner
+        User user = LuckPermsProvider.get().getUserManager().getUser(player.getUuid());
+        user.data().clear(NodeType.META.predicate(mn -> mn.getMetaKey().equals("guild-owner")));
+        LuckPermsProvider.get().getUserManager().saveUser(user);
+
+        // assign the owner meta to the new owner
+        User newOwnerUser = LuckPermsProvider.get().getUserManager().getUser(newOwner.getUuid());
+        MetaNode metaNode = MetaNode.builder("guild-owner", team.getName()).build();
+        newOwnerUser.data().add(metaNode);
+        LuckPermsProvider.get().getUserManager().saveUser(newOwnerUser);
+
+        source.sendFeedback(() -> Text.translatable("commands.teamcmd.pass_ownership.success", player.getName()), false);
+
+        return 1;
     }
 
     private static boolean duplicateName(Collection<Team> teams, String name) {

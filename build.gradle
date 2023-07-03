@@ -39,6 +39,8 @@ dependencies {
     // Server Side Translations
     modImplementation include("xyz.nucleoid:server-translations-api:${project.translations_api_version}")
     implementation include("com.moandjiezana.toml:toml4j:${project.toml4j_version}")
+    // LuckPerms API
+    compileOnly 'net.luckperms:api:5.4'
 
 }
 

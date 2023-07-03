@@ -29,5 +29,10 @@
   "commands.teamcmd.option.seeFriendlyInvisibles.disabled": "Guild %s can no longer see invisible guild members",
   "commands.teamcmd.option.seeFriendlyInvisibles.enabled": "Guild %s can now see invisible guild members",
   "commands.teamcmd.list.teams.empty": "There are no guilds",
-  "commands.teamcmd.list.teams.success": "There are %s guild(s): %s"
+  "commands.teamcmd.list.teams.success": "There are %s guild(s): %s",
+  "commands.teamcmd.not_guild_owner": "You cannot perform this action due to not being the owner of this guild",
+  "commands.teamcmd.fail.owner_cant_leave": "As you are the guild owner you cannot leave this guild while there are other members, pass ownership first",
+  "commands.teamcmd.pass_ownership.yourself": "You can't pass ownership of the guild to yourself",
+  "commands.teamcmd.pass_ownership.not_in_team": "You cannot pass ownership to this player as they are not in your team!",
+  "commands.teamcmd.pass_ownership.success": "Successfully passed ownership to %s"
 }
