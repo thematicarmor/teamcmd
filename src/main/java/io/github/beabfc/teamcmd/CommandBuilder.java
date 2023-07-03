@@ -75,7 +75,8 @@ public class CommandBuilder {
             .then(literal("invite").then(argument("player", EntityArgumentType.player()).executes(ctx -> executeInvitePlayer(ctx.getSource(), EntityArgumentType.getPlayer(ctx, "player")))))
             .then(literal("accept").executes(ctx -> executeAcceptInvite(ctx.getSource())))
             .then(literal("passOwnership").then((argument("player", EntityArgumentType.player()).executes(ctx -> executePassOwnership(ctx.getSource(), EntityArgumentType.getPlayer(ctx, "player"))))))
-            .then(literal("disband").then(literal("confirm").executes(ctx -> executeDisband(ctx.getSource()))));
+            .then(literal("disband").then(literal("confirm").executes(ctx -> executeDisband(ctx.getSource()))))
+            .then(literal("msg").then(argument("message", StringArgumentType.greedyString()).executes(ctx -> executeTeamMsg(ctx.getSource(), StringArgumentType.getString(ctx, "message")))));
 
         LiteralArgumentBuilder<ServerCommandSource> setCommand = literal("set")
             .then(literal("color").then(argument("color", ColorArgumentType.color()).executes(ctx -> executeSetColor(ctx.getSource(), ColorArgumentType.getColor(ctx, "color")))))
@@ -351,7 +352,6 @@ public class CommandBuilder {
     }
 
     private static int executeDisband(ServerCommandSource source) throws CommandSyntaxException {
-
         ServerPlayerEntity player = source.getPlayerOrThrow();
         Team team = (Team) player.getScoreboardTeam();
 
@@ -361,6 +361,23 @@ public class CommandBuilder {
 
         player.getScoreboard().removeTeam(team);
         source.sendFeedback(() -> Text.translatable("commands.teamcmd.disband.success"), false);
+
+        return 1;
+    }
+
+    private static int executeTeamMsg(ServerCommandSource source, String message) throws CommandSyntaxException {
+        ServerPlayerEntity player = source.getPlayerOrThrow();
+
+        if (player.getScoreboardTeam() == null) {
+            throw NOT_IN_TEAM.create();
+        }
+
+        MutableText display = player.getDisplayName().copy().formatted(player.getScoreboardTeam().getColor());
+        MutableText text = display.append(Text.of(" » ").copy().formatted(Formatting.DARK_GRAY).append(Text.literal(message)).formatted(player.getScoreboardTeam().getColor()));
+
+        // Send to yourself as well
+        player.sendMessage(text.formatted(player.getScoreboardTeam().getColor()), false);
+        TeamUtil.sendToTeammates(player, text);
 
         return 1;
     }
