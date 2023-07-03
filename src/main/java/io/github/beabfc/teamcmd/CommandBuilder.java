@@ -72,7 +72,8 @@ public class CommandBuilder {
             .then(literal("leave").executes(ctx -> executeLeave(ctx.getSource())))
             .then(literal("invite").then(argument("player", EntityArgumentType.player()).executes(ctx -> executeInvitePlayer(ctx.getSource(), EntityArgumentType.getPlayer(ctx, "player")))))
             .then(literal("accept").executes(ctx -> executeAcceptInvite(ctx.getSource())))
-            .then(literal("passOwnership").then((argument("player", EntityArgumentType.player()).executes(ctx -> executePassOwnership(ctx.getSource(), EntityArgumentType.getPlayer(ctx, "player"))))));
+            .then(literal("passOwnership").then((argument("player", EntityArgumentType.player()).executes(ctx -> executePassOwnership(ctx.getSource(), EntityArgumentType.getPlayer(ctx, "player"))))))
+            .then(literal("disband").then(literal("confirm").executes(ctx -> executeDisband(ctx.getSource()))));
 
         LiteralArgumentBuilder<ServerCommandSource> setCommand = literal("set")
             .then(literal("color").then(argument("color", ColorArgumentType.color()).executes(ctx -> executeSetColor(ctx.getSource(), ColorArgumentType.getColor(ctx, "color")))))
@@ -340,6 +341,21 @@ public class CommandBuilder {
         LuckPermsProvider.get().getUserManager().saveUser(newOwnerUser);
 
         source.sendFeedback(() -> Text.translatable("commands.teamcmd.pass_ownership.success", player.getName()), false);
+
+        return 1;
+    }
+
+    private static int executeDisband(ServerCommandSource source) throws CommandSyntaxException {
+
+        ServerPlayerEntity player = source.getPlayerOrThrow();
+        Team team = (Team) player.getScoreboardTeam();
+
+        if (!TeamUtil.isOwner(player, team)) {
+            throw NOT_GUILD_OWNER.create();
+        }
+
+        player.getScoreboard().removeTeam(team);
+        source.sendFeedback(() -> Text.translatable("commands.teamcmd.disband.success"), false);
 
         return 1;
     }

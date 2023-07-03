@@ -34,5 +34,6 @@
   "commands.teamcmd.fail.owner_cant_leave": "As you are the guild owner you cannot leave this guild while there are other members, pass ownership first",
   "commands.teamcmd.pass_ownership.yourself": "You can't pass ownership of the guild to yourself",
   "commands.teamcmd.pass_ownership.not_in_team": "You cannot pass ownership to this player as they are not in your team!",
-  "commands.teamcmd.pass_ownership.success": "Successfully passed ownership to %s"
+  "commands.teamcmd.pass_ownership.success": "Successfully passed ownership to %s",
+  "commands.teamcmd.disband.success": "Successfully disbanded your guild!"
 }
