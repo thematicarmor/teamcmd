@@ -59,6 +59,8 @@ public class CommandBuilder {
     private static final SimpleCommandExceptionType NOT_GUILD_OWNER =
             new SimpleCommandExceptionType(Text.translatable("commands.teamcmd.not_guild_owner"));
 
+    private static final int MAX_NUMBER_IN_GUILD = 3;
+
     public static void register(CommandDispatcher<ServerCommandSource> dispatcher) {
         LiteralArgumentBuilder<ServerCommandSource> teamCmd = literal(TeamCommand.CONFIG.commandName);
         teamCmd
@@ -210,6 +212,9 @@ public class CommandBuilder {
             throw NOT_IN_TEAM.create();
         } else if (newPlayer.isTeammate(player)) {
             throw PLAYER_ALREADY_TEAMMATE.create();
+        } else if (team.getPlayerList().size() > (MAX_NUMBER_IN_GUILD - 1)) {
+            source.sendFeedback(() -> Text.translatable("commands.teamcmd.invite.guild_too_big", String.valueOf(MAX_NUMBER_IN_GUILD)), false);
+            return 0;
         }
 
         TeamUtil.addInvite(newPlayer, team.getName());
