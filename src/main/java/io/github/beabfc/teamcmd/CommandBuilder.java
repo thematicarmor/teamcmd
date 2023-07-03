@@ -352,7 +352,6 @@ public class CommandBuilder {
     }
 
     private static int executeDisband(ServerCommandSource source) throws CommandSyntaxException {
-
         ServerPlayerEntity player = source.getPlayerOrThrow();
         Team team = (Team) player.getScoreboardTeam();
 
@@ -368,10 +367,16 @@ public class CommandBuilder {
 
     private static int executeTeamMsg(ServerCommandSource source, String message) throws CommandSyntaxException {
         ServerPlayerEntity player = source.getPlayerOrThrow();
-        Team team = (Team) player.getScoreboardTeam();
 
-        Text text = Text.literal(""); // todo implement formatting
+        if (player.getScoreboardTeam() == null) {
+            throw NOT_IN_TEAM.create();
+        }
 
+        MutableText display = player.getDisplayName().copy().formatted(player.getScoreboardTeam().getColor());
+        MutableText text = display.append(Text.of(" » ").copy().formatted(Formatting.DARK_GRAY).append(Text.literal(message)).formatted(player.getScoreboardTeam().getColor()));
+
+        // Send to yourself as well
+        player.sendMessage(text.formatted(player.getScoreboardTeam().getColor()), false);
         TeamUtil.sendToTeammates(player, text);
 
         return 1;
