@@ -220,8 +220,8 @@ public class CommandBuilder {
             Text.translatable("commands.teamcmd.invite", player.getDisplayName(), team.getFormattedName())
                 .formatted(Formatting.GRAY)
                 .styled((style) -> style
-                    .withClickEvent(new ClickEvent(ClickEvent.Action.SUGGEST_COMMAND, "/t accept"))
-                    .withHoverEvent(new HoverEvent(HoverEvent.Action.SHOW_TEXT, Text.literal("/t accept")))
+                    .withClickEvent(new ClickEvent(ClickEvent.Action.SUGGEST_COMMAND, "/guild accept"))
+                    .withHoverEvent(new HoverEvent(HoverEvent.Action.SHOW_TEXT, Text.literal("/guild accept")))
                     .withInsertion("/t accept"));
 
 
