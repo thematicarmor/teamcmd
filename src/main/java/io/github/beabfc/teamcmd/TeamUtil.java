@@ -7,10 +7,7 @@ import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.text.Text;
 
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.UUID;
+import java.util.*;
 
 public abstract class TeamUtil {
     private static final int TPS = 20;
@@ -44,12 +41,13 @@ public abstract class TeamUtil {
 
 
     public static void tick(MinecraftServer server) {
+        List<UUID> toRemove = new ArrayList<>();
         for (Map.Entry<UUID, TeamInvite> entry : inviteMap.entrySet()) {
             TeamInvite invite = entry.getValue();
 
             if (invite.isExpired()) {
                 UUID playerUuid = entry.getKey();
-                inviteMap.remove(playerUuid);
+                toRemove.add(playerUuid);
                 ServerPlayerEntity player = server.getPlayerManager().getPlayer(playerUuid);
                 if (player != null) {
                     Team team = player.getScoreboard().getTeam(invite.getTeamName());
@@ -61,6 +59,9 @@ public abstract class TeamUtil {
             }
 
             invite.hasTicked();
+        }
+        for (UUID uuid : toRemove) {
+            inviteMap.remove(uuid);
         }
     }
 
