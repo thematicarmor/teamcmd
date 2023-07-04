@@ -36,5 +36,6 @@
   "commands.teamcmd.pass_ownership.not_in_team": "You cannot pass ownership to this player as they are not in your team!",
   "commands.teamcmd.pass_ownership.success": "Successfully passed ownership to %s",
   "commands.teamcmd.disband.success": "Successfully disbanded your guild!",
-  "commands.teamcmd.invite.guild_too_big": "Guilds can only have a maximum of %s members"
+  "commands.teamcmd.invite.guild_too_big": "Guilds can only have a maximum of %s members",
+  "commands.teamcmd.guildchat.toggle": "Guild chat toggled: %s"
 }
