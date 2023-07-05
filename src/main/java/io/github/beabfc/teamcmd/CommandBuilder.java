@@ -359,7 +359,9 @@ public class CommandBuilder {
         ServerPlayerEntity player = source.getPlayerOrThrow();
         Team team = (Team) player.getScoreboardTeam();
 
-        if (!TeamUtil.isOwner(player, team)) {
+        if (team == null) {
+            throw NOT_IN_TEAM.create();
+        } else if (!TeamUtil.isOwner(player, team)) {
             throw NOT_GUILD_OWNER.create();
         }
 
