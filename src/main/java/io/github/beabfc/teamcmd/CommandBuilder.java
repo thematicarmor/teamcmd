@@ -80,7 +80,7 @@ public class CommandBuilder {
             .then(literal("chat")
                     .then(literal("message").then(argument("message", StringArgumentType.greedyString()).executes(ctx -> executeTeamMsg(ctx.getSource(), StringArgumentType.getString(ctx, "message")))))
                     .then(literal("toggle").executes(ctx -> executeTeamChatToggle(ctx.getSource())))
-            );
+            ).then(literal("kick").then((argument("player", EntityArgumentType.player()).executes(ctx -> executeTeamKick(ctx.getSource(), EntityArgumentType.getPlayer(ctx, "player"))))));
 
         LiteralArgumentBuilder<ServerCommandSource> setCommand = literal("set")
             .then(literal("color").then(argument("color", ColorArgumentType.color()).executes(ctx -> executeSetColor(ctx.getSource(), ColorArgumentType.getColor(ctx, "color")))))
@@ -391,6 +391,29 @@ public class CommandBuilder {
         TeamUtil.guildChatToggleMap.put(uuid, currentStatus);
 
         source.sendFeedback(() -> Text.translatable("commands.teamcmd.guildchat.toggle", currentStatus ? "ON" : "OFF"), false);
+        return 1;
+    }
+
+    private static int executeTeamKick(ServerCommandSource source, ServerPlayerEntity playerToKick) throws CommandSyntaxException {
+        ServerPlayerEntity player = source.getPlayerOrThrow();
+        Team team = (Team) player.getScoreboardTeam();
+
+        if (team == null){
+            throw NOT_IN_TEAM.create();
+        } else if (!TeamUtil.isOwner(player, team)) {
+            throw NOT_GUILD_OWNER.create();
+        } else if (player.getScoreboardTeam() != playerToKick.getScoreboardTeam()) {
+            source.sendFeedback(() -> Text.translatable("commands.teamcmd.kick.not_in_team", playerToKick.getName()), false);
+            return 0;
+        } else if (player == playerToKick) {
+            source.sendFeedback(() -> Text.translatable("commands.teamcmd.kick.yourself"), false);
+            return 0;
+        }
+
+        Team playerToKickTeam = (Team) playerToKick.getScoreboardTeam();
+        playerToKick.getScoreboard().removePlayerFromTeam(playerToKick.getName().getString(), playerToKickTeam);
+        source.sendFeedback(() -> Text.translatable("commands.teamcmd.kick.success", playerToKick.getName()), false);
+
         return 1;
     }
 
