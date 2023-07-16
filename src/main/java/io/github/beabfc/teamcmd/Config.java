@@ -11,10 +11,10 @@ public class Config {
     public String commandName = "guild";
     public boolean allowDuplicateColors = true;
     public boolean allowDuplicateDisplaynames = false;
-    public String prefixFormat = "[%.1s] ";
+    public String prefixFormat = " ";
     public boolean prefixUseTeamColor = false;
-    public String suffixFormat = "";
-    public boolean suffixUseTeamColor = false;
+    public String suffixFormat = " (%.5s) ";
+    public boolean suffixUseTeamColor = true;
 
 
     public static Config load(String configName) {
